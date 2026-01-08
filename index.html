@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家庭保单管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航栏 -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <h1>家庭保单管理系统</h1>
+            </div>
+            <div class="user-info">
+                <span id="current-date">2023年10月15日</span>
+                <button class="btn-add" id="add-policy-btn">
+                    <i class="fas fa-plus"></i> 添加保单
+                </button>
+            </div>
+        </header>
+
+        <!-- 主内容区域 -->
+        <main class="main-content">
+            <!-- 左侧边栏 -->
+            <aside class="sidebar">
+                <nav class="nav-menu">
+                    <ul>
+                        <li class="active" data-tab="dashboard">
+                            <i class="fas fa-home"></i> 仪表盘
+                        </li>
+                        <li data-tab="family-members">
+                            <i class="fas fa-users"></i> 家庭成员
+                        </li>
+                        <li data-tab="policies">
+                            <i class="fas fa-file-contract"></i> 所有保单
+                        </li>
+                        <li data-tab="premiums">
+                            <i class="fas fa-chart-pie"></i> 保费总览
+                        </li>
+                        <li data-tab="reminders">
+                            <i class="fas fa-bell"></i> 提醒
+                            <span class="notification-badge" id="reminder-count">3</span>
+                        </li>
+                        <li data-tab="settings">
+                            <i class="fas fa-cog"></i> 设置
+                        </li>
+                    </ul>
+                </nav>
+                
+                <div class="quick-stats">
+                    <h3><i class="fas fa-chart-line"></i> 快速统计</h3>
+                    <div class="stat-item">
+                        <span>总保单数</span>
+                        <span class="stat-value" id="total-policies">12</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>本月应缴</span>
+                        <span class="stat-value premium-due" id="monthly-premium">¥4,850</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>即将到期</span>
+                        <span class="stat-value expiring-soon" id="expiring-count">2</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- 右侧内容区域 -->
+            <section class="content-area">
+                <!-- 仪表盘页面 -->
+                <div class="tab-content active" id="dashboard">
+                    <h2><i class="fas fa-home"></i> 仪表盘</h2>
+                    <div class="dashboard-grid">
+                        <div class="card summary-card">
+                            <h3><i class="fas fa-chart-bar"></i> 年度保费总览</h3>
+                            <div class="chart-container">
+                                <canvas id="premiumChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="card upcoming-card">
+                            <h3><i class="fas fa-calendar-alt"></i> 即将到期的保单</h3>
+                            <div id="upcoming-policies">
+                                <!-- 动态生成 -->
+                            </div>
+                        </div>
+                        
+                        <div class="card recent-card">
+                            <h3><i class="fas fa-history"></i> 最近添加的保单</h3>
+                            <div id="recent-policies">
+                                <!-- 动态生成 -->
+                            </div>
+                        </div>
+                        
+                        <div class="card family-card">
+                            <h3><i class="fas fa-users"></i> 家庭成员</h3>
+                            <div id="family-list">
+                                <!-- 动态生成 -->
+                            </div>
+                            <button class="btn-add-small" id="add-member-btn">
+                                <i class="fas fa-user-plus"></i> 添加成员
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 家庭成员页面 -->
+                <div class="tab-content" id="family-members">
+                    <div class="page-header">
+                        <h2><i class="fas fa-users"></i> 家庭成员</h2>
+                        <button class="btn-add" id="add-member-btn2">
+                            <i class="fas fa-user-plus"></i> 添加成员
+                        </button>
+                    </div>
+                    
+                    <div class="members-grid" id="members-container">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 所有保单页面 -->
+                <div class="tab-content" id="policies">
+                    <div class="page-header">
+                        <h2><i class="fas fa-file-contract"></i> 所有保单</h2>
+                        <div class="filter-controls">
+                            <select id="policy-filter">
+                                <option value="all">全部保单</option>
+                                <option value="active">有效保单</option>
+                                <option value="expired">已过期</option>
+                                <option value="health">健康险</option>
+                                <option value="life">人寿险</option>
+                                <option value="property">财产险</option>
+                            </select>
+                            <button class="btn-add" id="add-policy-btn2">
+                                <i class="fas fa-plus"></i> 添加保单
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="policies-container">
+                        <table class="policies-table">
+                            <thead>
+                                <tr>
+                                    <th>保单名称</th>
+                                    <th>所属成员</th>
+                                    <th>保险公司</th>
+                                    <th>类型</th>
+                                    <th>年保费</th>
+                                    <th>下次缴费日</th>
+                                    <th>到期日</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="policies-table-body">
+                                <!-- 动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 保费总览页面 -->
+                <div class="tab-content" id="premiums">
+                    <h2><i class="fas fa-chart-pie"></i> 保费总览</h2>
+                    <div class="premiums-grid">
+                        <div class="card">
+                            <h3><i class="fas fa-chart-pie"></i> 按类型分布</h3>
+                            <div class="chart-container">
+                                <canvas id="typeChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3><i class="fas fa-user-tag"></i> 按成员分布</h3>
+                            <div class="chart-container">
+                                <canvas id="memberChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="card premium-summary">
+                            <h3><i class="fas fa-file-invoice-dollar"></i> 保费摘要</h3>
+                            <div class="summary-details">
+                                <div class="summary-item">
+                                    <span>年度总保费</span>
+                                    <span class="summary-value" id="annual-total">¥58,200</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span>月均保费</span>
+                                    <span class="summary-value" id="monthly-avg">¥4,850</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span>最贵保单</span>
+                                    <span class="summary-value" id="most-expensive">终身寿险 - ¥12,000</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span>保单类型数</span>
+                                    <span class="summary-value" id="policy-types">5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 提醒页面 -->
+                <div class="tab-content" id="reminders">
+                    <h2><i class="fas fa-bell"></i> 提醒</h2>
+                    <div class="reminders-container">
+                        <div class="card">
+                            <h3><i class="fas fa-calendar-check"></i> 即将缴费</h3>
+                            <div id="payment-reminders">
+                                <!-- 动态生成 -->
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3><i class="fas fa-hourglass-end"></i> 即将到期</h3>
+                            <div id="expiry-reminders">
+                                <!-- 动态生成 -->
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3><i class="fas fa-clock"></i> 提醒设置</h3>
+                            <div class="reminder-settings">
+                                <div class="setting-item">
+                                    <label>
+                                        <input type="checkbox" checked> 缴费日前7天提醒
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <label>
+                                        <input type="checkbox" checked> 到期日前30天提醒
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <label>
+                                        <input type="checkbox"> 到期日前15天再次提醒
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <label>
+                                        <input type="checkbox" checked> 每月保费总览提醒
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 设置页面 -->
+                <div class="tab-content" id="settings">
+                    <h2><i class="fas fa-cog"></i> 设置</h2>
+                    <div class="settings-container">
+                        <div class="card">
+                            <h3><i class="fas fa-bell"></i> 通知设置</h3>
+                            <div class="setting-group">
+                                <div class="setting-item">
+                                    <label>默认提醒时间</label>
+                                    <select>
+                                        <option>上午9:00</option>
+                                        <option>下午2:00</option>
+                                        <option>下午6:00</option>
+                                    </select>
+                                </div>
+                                <div class="setting-item">
+                                    <label>通知方式</label>
+                                    <div class="checkbox-group">
+                                        <label><input type="checkbox" checked> 应用内通知</label>
+                                        <label><input type="checkbox"> 电子邮件</label>
+                                        <label><input type="checkbox"> 短信</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3><i class="fas fa-database"></i> 数据管理</h3>
+                            <div class="setting-group">
+                                <div class="setting-item">
+                                    <button class="btn-export">
+                                        <i class="fas fa-download"></i> 导出数据
+                                    </button>
+                                    <button class="btn-import">
+                                        <i class="fas fa-upload"></i> 导入数据
+                                    </button>
+                                </div>
+                                <div class="setting-item">
+                                    <button class="btn-backup">
+                                        <i class="fas fa-save"></i> 备份数据到云端
+                                    </button>
+                                </div>
+                                <div class="setting-item">
+                                    <button class="btn-danger">
+                                        <i class="fas fa-trash-alt"></i> 清除所有数据
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 添加保单模态框 -->
+    <div class="modal" id="add-policy-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-contract"></i> 添加新保单</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="policy-form">
+                    <div class="form-group">
+                        <label for="policy-name">保单名称 *</label>
+                        <input type="text" id="policy-name" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="policy-member">所属成员 *</label>
+                            <select id="policy-member" required>
+                                <!-- 动态生成 -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="policy-type">保险类型 *</label>
+                            <select id="policy-type" required>
+                                <option value="health">健康险</option>
+                                <option value="life">人寿险</option>
+                                <option value="property">财产险</option>
+                                <option value="accident">意外险</option>
+                                <option value="travel">旅行险</option>
+                                <option value="other">其他</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="insurance-company">保险公司 *</label>
+                            <input type="text" id="insurance-company" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="policy-number">保单号 *</label>
+                            <input type="text" id="policy-number" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="annual-premium">年保费 (¥) *</label>
+                            <input type="number" id="annual-premium" min="0" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="payment-frequency">缴费频率</label>
+                            <select id="payment-frequency">
+                                <option value="yearly">年缴</option>
+                                <option value="semi-annual">半年缴</option>
+                                <option value="quarterly">季缴</option>
+                                <option value="monthly">月缴</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="start-date">生效日期 *</label>
+                            <input type="date" id="start-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="end-date">到期日期 *</label>
+                            <input type="date" id="end-date" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="next-payment">下次缴费日 *</label>
+                            <input type="date" id="next-payment" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="policy-status">状态</label>
+                            <select id="policy-status">
+                                <option value="active">有效</option>
+                                <option value="expired">已过期</option>
+                                <option value="cancelled">已取消</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="policy-notes">备注</label>
+                        <textarea id="policy-notes" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel close-modal">取消</button>
+                        <button type="submit" class="btn-submit">保存保单</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加家庭成员模态框 -->
+    <div class="modal" id="add-member-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus"></i> 添加家庭成员</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="member-form">
+                    <div class="form-group">
+                        <label for="member-name">姓名 *</label>
+                        <input type="text" id="member-name" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="member-relation">与本人关系 *</label>
+                            <select id="member-relation" required>
+                                <option value="self">本人</option>
+                                <option value="spouse">配偶</option>
+                                <option value="child">子女</option>
+                                <option value="parent">父母</option>
+                                <option value="sibling">兄弟姐妹</option>
+                                <option value="other">其他</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="member-gender">性别</label>
+                            <select id="member-gender">
+                                <option value="male">男</option>
+                                <option value="female">女</option>
+                                <option value="other">其他</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="member-birthdate">出生日期</label>
+                            <input type="date" id="member-birthdate">
+                        </div>
+                        <div class="form-group">
+                            <label for="member-phone">联系电话</label>
+                            <input type="tel" id="member-phone">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="member-notes">备注</label>
+                        <textarea id="member-notes" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel close-modal">取消</button>
+                        <button type="submit" class="btn-submit">保存成员</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部信息栏 -->
+    <footer class="footer">
+        <p>家庭保单管理系统 © 2023 | 数据存储在本地浏览器中，请定期备份</p>
+        <p class="github-link">
+            <i class="fab fa-github"></i> 
+            <a href="https://github.com" target="_blank">在GitHub上查看本项目</a>
+        </p>
+    </footer>
+
+    <!-- 引入Chart.js库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
